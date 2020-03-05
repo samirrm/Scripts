@@ -1,0 +1,194 @@
+-- https://stackoverflow.com/questions/50368376/docker-swarm-throwing-an-error-swarm-already-part-of-swarm
+
+
+-- https://medium.com/@fidelissauro/docker-swarm-quickstart-do-seu-cluster-local-com-docker-machine-e-virtualbox-44d4096deae
+* - Docker Swarm 01 — Quickstart do seu Cluster Local com Docker-Machine e Virtualbox
+
+https://medium.com/@fidelissauro/docker-swarm-02-quickstart-do-seu-cluster-de-ec2-na-amazon-aws-com-docker-1394d365cb04
+* - Docker Swarm 02— Quickstart do seu Cluster de EC2 na Amazon AWS com Docker.
+
+https://github.com/msfidelis/docker-api-demo
+
+* - Load Balances e Auto Scaling, Fazendo Deploy de uma Stack de Serviços no Cluste usando  Composer V3
+
+Docker Swarm
+
+- Orquestrador de Container
+	- Definir melhor host para executar o tipo de container.
+	- Caso um container pare, ele pode reiniciar automaticamente em caso de falha / --- ou subir um novo container.
+
+
+## Criando Manager  ##
+$ docker swarm init --advertise-addr eth1
+
+#  Gerar Token  # 
+-- MANAGER
+$ docker swarm join-token manager -- Gerar token Manager para promover um nó
+Obs.: Votação de Falha (Nos/2)+1
+
+-- WORKER
+$ docker swarm join-token worker -- Mostar token para worker
+
+# Promover e Despomover Nó#
+
+Podemos promover vários hosts para manager
+$ docker node promote vm01
+$ docker node promote vm1 vm2
+
+Para Despromver um Nó/host antes de excluir:
+$ docker node demote vm01
+$ docker node demote vm1 vm2
+
+
+### Criar Maquinas Virtuais para o Swarm ###
+-- Criar os hosts individualmente
+$ docker-machine create -d virtualbox master
+$ docker-machine create -d virtualbox vm01
+$ docker-machine create -d virtualbox vm02
+$ docker-machine create -d virtualbox vm03
+
+Obs.:
+Criar um host e sem seguindda inserir no swarm como worker ou manager.
+Exemplo:
+$ docker-machine create -d virtualbox --swarm --swarm-discovery token://SWMTKN-1-2e95hldkj5o49adkdz469fvlq311z1ral971gchs32hyol6rpn-57mr3rif9iy4mj54a29uekch0 vm01
+$ docker-machine create -d virtualbox --swarm --swarm-discovery token://SWMTKN-1-2e95hldkj5o49adkdz469fvlq311z1ral971gchs32hyol6rpn-57mr3rif9iy4mj54a29uekch0 vm02
+$ docker-machine create -d virtualbox --swarm --swarm-discovery token://SWMTKN-1-2e95hldkj5o49adkdz469fvlq311z1ral971gchs32hyol6rpn-57mr3rif9iy4mj54a29uekch0 vm03
+
+
+###	 Configurar	:Master:		####
+$ docker swarm init --advertise-addr eth1 
+Obs: Posso ter mais de 1 master.
+
+Acessar via SSH:
+$ docker-machine ssh vm01
+
+Listar no Nós do Master:
+$ docker node ls
+
+Parar os Nos/host:
+obs.: Tem que acessa o Nó para da STOP.
+$ docker swarm leave 
+
+Remover Nós/host do swarm: 
+$ docker node rm ID_CONTAINER
+
+Remover Container dentro do Nó/host:
+$ docker container rm ID_CONTAINER --force
+obs: Não exclui os Nós/host/maquina virtual. 
+
+Inspecionar os Nós do Master
+$ docker node inspect vm01 --pretty
+ou
+$ docker node inspect vm2
+
+####  :Subir Container dentro do Swarm:  ####
+ - Convencional Host Docker.
+ 
+$ docker container run -p 8080:3000 -d microsoft/dotnet:2.2-aspnetcore-runtime
+
+ - Usando Swarm (MANAGER/MASTER)
+$ docker service create -p 8080:3000 aluracursos/barbearia
+	O Swarm sobe a aplicação balanceando.
+	Caro uma aplicação caia.
+	Automaticamente ele sobre outra aplicação em outro nó rapidamente. 
+	Routing Mesh. - A aplicação pode ser acessada pelo endereço do swarm (MASTER)
+
+	
+listar Servicos (MANAGER/MASTER)
+$ docker container ls
+$ docker service ls
+$ docker service ps ID_SERVICO
+	
+	
+####  Boa Prática  ####
+
+Caso eu tenha perder o MASTER fazer backup das configurações do master, 
+ou subir um snapshot para estado de funcionamento da maquina.
+ou não subir um (MASTER), mais de um.
+
+	/var/lib/docker/swarm
+
+Voltar o backup e forçar o reutilização das configurações
+
+$ docker swarm init --force-new-cluster --advertise-addr ENDEREÇO_IP_MASTER ou eth1
+
+
+## 2.0 Restringir aos Nós Para Rodar Servicos  ##
+
+O nó ficará indisponível para executar tarefas.
+Nó/Host não serão worker.
+
+$ docker node update --availability drain vm02
+
+--- Add Novamente
+$ docker node update --availability active vm02
+
+## 2.1 Restringir Servicos aos Nós  ##
+
+Gestringir um servico para rodar apenas nos worker
+Por Serviço:
+$ docker service update --constraint-add node.role==worker ID_SERVICO
+Por HOST_NAME ou Nó:
+$ docker service update --constraint-add node.hostname==vm01 ID_SERVICO
+ 
+--- Remover Restrições
+Por Serviço:
+$ docker service update --constraint-rm node.id==ID_NÓ ID_SERVICO
+Por HOST_NAME ou Nó:
+$ docker service update --constraint-rm node.hostname==vm01 ID_SERVICO
+
+
+##  Replicar / Clusterizar Container  ##
+
+Dividir a Carga não só dos nós usado "HA" Routing Mesh, mas também da "aplicação"
+$ docker service update --replicas 2 ID_SERVICO
+
+ou comando direto:
+$ docker service scale ID_SERVICO=5
+
+##  Servicos Globais   ##
+Serviços que estarao rodando em casa nó do swar. 
+Garantir uma maior disponibilidade, segurança...
+Flag: --mode
+$ docker service create -p 8080:3000 --mode global aluracursos/barbearia
+
+Obs.: Modo default
+$ docker service create -p 8080:3000 --mode replicated aluracursos/barbearia
+
+
+##  Rede | Services Discovery ##
+$ docker node inspect vm01 --pretty
+
+Criar Rede:
+Ex.: network-cluster-docker
+
+O driver overlay é utilizado para a comunicação entre nós em diferentes hosts
+User-Defined Overlay são criadas de maneira lazy para workers.
+Criar sua rede, informar um nome, usar o drive overlay.
+Serviços que utilizam redes customizadas conseguem descobrir outros serviços diretamente por nome.
+
+Quando no momemento que for subir um novo container/service não esquecer de informar a nova rede
+Rede:
+$ docker network create -d overlay network-cluster-docker
+
+Serviço:
+$docker service create --name servico --network network-cluster-docker --replicas 2 alpine
+
+Com o comando abaixo, conseguiremos conectar tanto serviços como containers "standalone" em nossa rede
+$ --attachable
+
+## Docker Composer ##
+Subir Stack usando docker-compose.
+
+docker stack deploy --compose-file docker-compose.yml VOTACAO
+
+
+$ docker stack deploy --compose-file docker-compose.yml NOME_STACK
+
+
+
+
+
+
+
+

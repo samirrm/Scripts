@@ -1,0 +1,1 @@
+https://books.google.com.br/books?id=yYKGDwAAQBAJ&pg=PA176&lpg=PA176&dq=stdin,+stdout,+stderr+%3D+client.exec_command(%27l%27)&source=bl&ots=vsJjFLVqYk&sig=ACfU3U2aKfBPoknth51CVlIzQUUUvxrgnQ&hl=pt-BR&sa=X&ved=2ahUKEwjC98nz3KfnAhVmKLkGHczDAy0Q6AEwAnoECAoQAQ#v=onepage&q&f=true

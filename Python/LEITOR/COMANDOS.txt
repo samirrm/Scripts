@@ -1,0 +1,7 @@
+config system admin
+edit "TESTE"
+set accprofile "super_admin"
+set password teste1
+set vdom "root"
+next
+end
