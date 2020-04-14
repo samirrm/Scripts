@@ -3,8 +3,8 @@ import sys
 import paramiko 
 import time 
 espaco = ' ' 
-ip  = '10.11.100.39' 
-usuario = '99936' 
+ip  = '10.10.10.10' 
+usuario = 'USUARIO' 
 sudo = 'sudo docker start' 
 arquivo = open('PASSWD.txt', 'r') 
 passwd = arquivo.readline() 
