@@ -1,0 +1,17 @@
+# Passo 1 - Instalar o Elasticsearch fazendo uso do arquivo de definição yaml:
+
+kubectl apply -f ./5-Elasticsearch
+
+# Passo 2 - Instalar o kibana fazendo uso do arquivo de definição yaml:
+
+kubectl apply -f ./6-Kibana
+
+# Passo 3 - Instalar o fluentd fazendo uso do arquivo de definição yaml:
+
+kubectl apply -f ./7-Fluentd
+
+# Passo 4 - Acessar o dashboard Kibana a partir do endpoint alocado pelo serviço:
+
+kubectl -n kube-system get svc kibana
+
+# Acesse via browser através da URL listada em EXTERNAL-IP

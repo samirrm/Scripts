@@ -1,0 +1,29 @@
+apiVersion: v1
+data:
+  PASS: dHl4aDUwMjAh
+  PASSCOSMOSDW: S09TMTUyME1P
+  USER: a28zNTUwbW8=
+  USERCOSMOSDW: VVNFUkNPU01PUw==
+kind: Secret
+metadata:
+  name: mssqlserver-user-pass
+  namespace: lgpd
+type: Opaque
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: default-gateway
+  namespace: lgpd
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http
+      number: 80
+      protocol: HTTP

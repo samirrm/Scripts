@@ -1,0 +1,31 @@
+apiVersion: v1
+data:
+  DATABASE_PASS: Q09TTU9T
+  DATABASE_USER: U1lTQ09TTU9T
+  PASS: Q09TTU9T
+  PASSCOSMOSDW: Q09TTU9T
+  USER: U1lTQ09TTU9T
+  USERCOSMOSDW: U1lTQ09TTU9T
+kind: Secret
+metadata:
+  name: mssqlserver-user-pass
+  namespace: prevperdas
+type: Opaque
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: default-gateway
+  namespace: prevperdas
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http
+      number: 80
+      protocol: HTTP

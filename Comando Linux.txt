@@ -1,0 +1,27 @@
+﻿### Gerar Chave SSH
+https://www.youtube.com/watch?v=7BEsfupYngE
+Metodo 1
+
+1° Gerar Chave SSH
+ssh-keygen
+
+2° Entrar na pasta que foi gerada as chaves
+Ex.:/home/12345/.ssh/
+
+3° O comando vai copiar automaticamente sua chave ssh publica "id_rsa.pub" e inserir no servidor de destino.
+ssh-copy-id 12345@IP_DESTINO
+
+Obs.: Ganho para acessar servidores sem passar senha. ou utilizar em sistemas.
+
+Metodo 2
+
+2° Entrar na pasta que foi gerada as chaves
+Ex.:/home/12345/.ssh/
+
+ssh-agent /bin/sh
+
+ssh-add
+
+
+
+
